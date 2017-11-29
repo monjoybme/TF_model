@@ -9,85 +9,19 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 
-training_epochs = 1
+training_epochs = 30
 display_step = 1
 batch_size = 100
 width = 28
 height = 28
 #number of classes
 nClass = 10
-addr_train = "/home/pavelkrolevets/Working/TF_facenet/data/output/train-00000-of-00001"
-addr_val = "/home/pavelkrolevets/Working/TF_facenet/data/output/validation-00000-of-00001"
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 NUM_EPOCHS_PER_DECAY = 1      # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.0001       # Initial learning rate.
-
-# Counting number of samples in TFrecord
-def rec_iter (FILE):
-    i = sum(1 for _ in tf.python_io.tf_record_iterator(FILE))
-    return i
-
-N_OF_SAMPL_TRAIN = rec_iter(addr_train)
-N_OF_SAMPL_VAL = rec_iter(addr_val)
-print('Number of samples for training', N_OF_SAMPL_TRAIN)
-print('Number of samples for validating', N_OF_SAMPL_VAL)
-# Function to tell TensorFlow how to read a single image from input file
-def getImage(filenameQ):
-
-    # object to read records
-    recordReader = tf.TFRecordReader()
-
-    # read the full set of features for a single example
-    key, fullExample = recordReader.read(filenameQ)
-
-    # parse the full example into its' component features.
-    features = tf.parse_single_example(
-        fullExample,
-        features={
-            'image/height': tf.FixedLenFeature([], tf.int64),
-            'image/width': tf.FixedLenFeature([], tf.int64),
-            'image/colorspace': tf.FixedLenFeature([], dtype=tf.string, default_value=''),
-            'image/channels': tf.FixedLenFeature([], tf.int64),
-            'image/class/label': tf.FixedLenFeature([], tf.int64),
-            'image/class/text': tf.FixedLenFeature([], dtype=tf.string, default_value=''),
-            'image/format': tf.FixedLenFeature([], dtype=tf.string, default_value=''),
-            'image/filename': tf.FixedLenFeature([], dtype=tf.string, default_value=''),
-            'image/encoded': tf.FixedLenFeature([], dtype=tf.string, default_value='')
-        })
-
-    # now we are going to manipulate the label and image features
-
-    label = features['image/class/label']
-    image_buffer = features['image/encoded']
-    file = features['image/filename']
-
-    # Decode the jpeg
-    with tf.name_scope('decode_jpeg', [image_buffer], None):
-        # decode
-        image = tf.image.decode_jpeg(image_buffer, channels=3)
-
-        # and convert to single precision data type
-        image = tf.image.convert_image_dtype(image, dtype=tf.float32)
-
-    # cast image into a single array, where each element corresponds to the greyscale
-    # value of a single pixel.
-    # the "1-.." part inverts the image, so that the background is black.
-
-    image = tf.reshape(image, [width, height, 3])
-
-    # re-define label as a "one-hot" vector
-    # it will be [0,1] or [1,0] here.
-    # This approach can easily be extended to more classes.
-    label = tf.stack(tf.one_hot(label - 1, nClass))
-    #label = tf.to_int32(label-1)
-
-    return label, image, file
-
-
-
 
 #MODEL
 
@@ -179,51 +113,6 @@ def evaluate(output, y):
     tf.summary.scalar("validation error", (1.0 - accuracy))
     return accuracy
 
-
-
-# import data
-# associate the "label" and "image" objects with the corresponding features read from
-# a single example in the training data file
-# convert filenames to a queue for an input pipeline.
-
-filenameQ_train = tf.train.string_input_producer([addr_train], num_epochs=None)
-label, image, file = getImage(filenameQ_train)
-
-print(label, '\n', image)
-# similarly for the validation data
-
-filenameQ_val = tf.train.string_input_producer([addr_val], num_epochs=None)
-vlabel, vimage, vfile = getImage(filenameQ_val)
-
-# associate the "label_batch" and "image_batch" objects with a randomly selected batch---
-# of labels and images respectively
-imageBatch, labelBatch, fileBatch = tf.train.shuffle_batch(
-    [image, label, file], batch_size=batch_size,
-    capacity=2000,
-    min_after_dequeue=200)
-
-# and similarly for the validation data
-vimageBatch, vlabelBatch, vfileBatch = tf.train.shuffle_batch(
-    [vimage, vlabel, vfile], batch_size=batch_size,
-    capacity=2000,
-    min_after_dequeue=200)
-
-
-# # DEBUG
-# sess = tf.InteractiveSession()
-# addr_train = "/home/pavelkrolevets/Working/TF_facenet/data/output/train-00000-of-00001"
-# # filenameQ_test = tf.train.string_input_producer([addr_test], num_epochs=1)
-# # label, image = getImage(filenameQ_test)
-# init_op = tf.initialize_all_variables()
-# sess.run(init_op)
-# coord = tf.train.Coordinator()
-# threads = tf.train.start_queue_runners(sess=sess,coord=coord)
-#
-#
-# print(v1)
-# sess.close()
-
-
 x = tf.placeholder("float", [None, height* width*1], name='placehold_x')
 y = tf.placeholder('float', [None, nClass], name='placehold_y')
 
@@ -241,22 +130,10 @@ eval_op = evaluate(output, y)
 summary_op = tf.summary.merge_all()
 saver = tf.train.Saver()
 
-
-
-#top_k_op = tf.nn.in_top_k(output, y, 1)
-
-
 sess = tf.Session() # config=tf.ConfigProto(log_device_placement=True)
 summary_writer = tf.summary.FileWriter("summary_logs/", graph_def=sess.graph_def)
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
-
-#train_eval_op = evaluate(output, y)
-
-# coord = tf.train.Coordinator()
-# threads = tf.train.start_queue_runners(sess=sess,coord=coord)
-
-
 
 with tf.device('/gpu:0'):
     with sess.as_default():
@@ -269,12 +146,12 @@ with tf.device('/gpu:0'):
             for i in range(total_batch_train):
                 minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
                 # Fit training using batch data
-                print(minibatch_x)
                 sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y, keep_prob: 0.5})
                 train_precision = sess.run(eval_op, feed_dict={x: minibatch_x, y: minibatch_y, keep_prob: 1})
                 # Compute average loss
                 avg_cost += sess.run(cost, feed_dict={x: minibatch_x, y: minibatch_y, keep_prob: 0.5})/batch_size
-                print('Epoch #: ', epoch, '  Batch #: ', i, 'loss: ', avg_cost, 'train precision: ', (1-train_precision))
+                if not i % 10:
+                    print('Epoch #: ', epoch, '  Batch #: ', i, 'loss: ', avg_cost, 'train error: ', (1-train_precision))
 
                 # Display logs per epoch step
             if epoch % display_step == 0:
@@ -282,12 +159,6 @@ with tf.device('/gpu:0'):
                 accuracy = sess.run(eval_op,
                                     feed_dict={x: minibatch_x_val, y: minibatch_y_val, keep_prob: 1})
                 print("Validation Error:", (1 - accuracy))
-                #vbatch_xs, vbatch_ys, vbatch_zs = sess.run([vimageBatch, vlabelBatch, vfileBatch])
-                #accuracy = sess.run(eval_op, feed_dict={x: vbatch_xs, y: vbatch_ys, keep_prob: 1})
-                prediction = sess.run(output, feed_dict={x: minibatch_x_val, keep_prob: 1})
-
-                # print ("Validation Error:", accuracy)
-                print (sess.run(tf.nn.softmax(prediction)))
 
                 summary_str = sess.run(summary_op, feed_dict={x: minibatch_x, y: minibatch_y, keep_prob: 1})
                 summary_writer.add_summary(summary_str, sess.run(global_step))
