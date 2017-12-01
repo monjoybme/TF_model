@@ -1,19 +1,10 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# 2017 Pavel Krolevets @ Shanghai Jiao Tong University.
 # ==============================================================================
 """
-This code is the preparation of your own images to feed them into build_image_data.py to create TFrecords file
+This code is the preparation of your own images to feed them into build_image_data.py to create TFrecords file.
+First this script resize img, then split them randomly to 80% train folder and 20% to test folder. All of the raw folder
+ structure preserved. Split images easy to use with build_image_data.py (provided by facenet dev.team) to create
+ TFRecords files for feeding.
 """
 
 import os
@@ -63,8 +54,8 @@ for i in just_dirs:
                 continue
             f.append(fileName)
             shuffle(f) # DONT FORGET TO SHUFFLE :-)
-        train_files = f[0:int(0.8 * len(f))]
-        test_files = f[int(0.8 * len(f)):]
+        train_files = f[0:int(0.8 * len(f))] # 80% to train
+        test_files = f[int(0.8 * len(f)):] # the rest 20% to test
         print(train_files, '\n', test_files)
 
     # creating folders

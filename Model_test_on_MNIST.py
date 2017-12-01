@@ -9,7 +9,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 
-training_epochs = 30
+training_epochs = 10
 display_step = 1
 batch_size = 100
 width = 28
@@ -145,6 +145,7 @@ with tf.device('/gpu:0'):
             # Loop over all batches
             for i in range(total_batch_train):
                 minibatch_x, minibatch_y = mnist.train.next_batch(batch_size)
+                #print (minibatch_x, 'n/', minibatch_y)
                 # Fit training using batch data
                 sess.run(train_op, feed_dict={x: minibatch_x, y: minibatch_y, keep_prob: 0.5})
                 train_precision = sess.run(eval_op, feed_dict={x: minibatch_x, y: minibatch_y, keep_prob: 1})
@@ -165,8 +166,11 @@ with tf.device('/gpu:0'):
 
                 saver.save(sess, "model_logs/model-checkpoint", global_step=global_step)
 
+                prediction = sess.run(output, feed_dict={x: minibatch_x_val, keep_prob: 1})
+                print(prediction)
 
         print ("Optimization Finished!")
+
 
         # total_batch_eval=N_OF_SAMPL_VAL/batch_size
         #
