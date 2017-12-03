@@ -14,7 +14,7 @@ from pathlib import Path
 import shutil
 from PIL import Image
 
-new_size = 200 # dimentions to resize raw imgs - means 200x200. Smaller images will be stretched.
+new_size = 100 # dimentions to resize raw imgs - means 200x200. Smaller images will be stretched.
 
 imageFolder_raw = '/home/pavelkrolevets/Working/TF_facenet/data/raw/' # adr to raw imgs
 imageFolder_train = '/home/pavelkrolevets/Working/TF_facenet/data/TRAIN_DIR/' # adr to train folder to store resized imgs

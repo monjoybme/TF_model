@@ -54,25 +54,26 @@ def inference(x, keep_prob):
     with tf.variable_scope("conv_1"):
         conv_1 = conv2d(x, [5, 5, 1, 32], [32])
 
-    with tf.variable_scope('max_pool1'):
-        pool_1 = max_pool(conv_1)
-
     with tf.variable_scope('batch_norm'):
-        norm1 = tf.nn.lrn(pool_1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+        norm1 = tf.nn.lrn(conv_1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
                           name='norm1')
+    with tf.variable_scope('max_pool1'):
+        pool_1 = max_pool(norm1)
+
+
 
     with tf.variable_scope("conv_2"):
-        conv_2 = conv2d(norm1, [5, 5, 32, 64], [64])
-
-    with tf.variable_scope('max_pool2'):
-        pool_2 = max_pool(conv_2)
+        conv_2 = conv2d(pool_1, [5, 5, 32, 64], [64])
 
     with tf.variable_scope('batch_norm'):
-            norm2 = tf.nn.lrn(pool_2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+            norm2 = tf.nn.lrn(conv_2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
                       name='norm2')
 
+    with tf.variable_scope('max_pool2'):
+        pool_2 = max_pool(norm2)
+
     with tf.variable_scope("conv_3"):
-        conv_3 = conv2d(norm2, [5, 5, 64, 32], [32])
+        conv_3 = conv2d(pool_2, [5, 5, 64, 32], [32])
 
     # with tf.variable_scope('max_pool3'):
     #     pool_3 = max_pool(conv_3)
@@ -108,6 +109,7 @@ def training(cost, global_step):
 
 
 def evaluate(output, y):
+    logits = tf.nn.softmax(output)
     correct_prediction = tf.equal(tf.argmax(output, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar("validation error", (1.0 - accuracy))
@@ -166,8 +168,9 @@ with tf.device('/gpu:0'):
 
                 saver.save(sess, "model_logs/model-checkpoint", global_step=global_step)
 
-                prediction = sess.run(output, feed_dict={x: minibatch_x_val, keep_prob: 1})
-                print(prediction)
+                temp1 = sess.run(output, feed_dict={x: minibatch_x_val, keep_prob: 1})
+                prediction = sess.run(tf.nn.softmax(temp1))
+                print(minibatch_x_val[0:10],'\n',minibatch_y_val[0:10],'\n',prediction[0:10])
 
         print ("Optimization Finished!")
 
