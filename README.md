@@ -10,4 +10,4 @@ Model.py - a simple CNN model for working with TFrecods files containing images 
 
 3. Use Model.py to train your net. You need to change addrs to your TFRecords files and size parameters of images. Also you need to update size of the first fully connected layer 'fc_1' to fit your size. Because net uses two pooling layers with kernel=2 stride=2 and padding of convolutional layers = SAME ==> you need to divide height and width by 4 times. If images have size of h = 100, w = 100 ==> fc_1 will have flat size 25x25x64, where 64 is number of filters in the previous convolutional layer (can be changed too).
 
-
+Disclamer: big part of the code presented here is based on Google's proprietary scripts. Just combined and adapted for convinience. Use for you pleasure. Dont harm cats and dogs.
