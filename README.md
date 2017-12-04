@@ -1,4 +1,4 @@
-# Simple utils and model for experimenting with your own images on Tensorflow (MNIST,CIFAR10 etc.)
+# Simple utils and model for experimenting with your own images using Tensorflow (e.g. MNIST,CIFAR10)
 
 Code for resizing images in a folder and split them into train/test directories for further TFrecord creation.
 
