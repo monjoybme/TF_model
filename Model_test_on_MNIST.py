@@ -1,3 +1,5 @@
+"""The model uses two conv layers+batch norm followed by two fully connected. Converges very fast with high accuracy"""
+
 import tensorflow as tf
 import time
 import sys
