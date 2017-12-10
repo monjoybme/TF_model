@@ -14,7 +14,7 @@ from pathlib import Path
 import shutil
 from PIL import Image
 
-new_size = 100 # dimentions to resize raw imgs - means 200x200. Smaller images will be stretched.
+new_size = 160 # dimentions to resize raw imgs - means 200x200. Smaller images will be stretched.
 
 imageFolder_raw = '/home/pavelkrolevets/Working/TF_facenet/data/raw/' # adr to raw imgs
 imageFolder_train = '/home/pavelkrolevets/Working/TF_facenet/data/TRAIN_DIR/' # adr to train folder to store resized imgs
@@ -40,10 +40,14 @@ def bulkResize(Folder, factor):
 
 # split data to train and test
 
-dir_list=[x[0] for x in os.walk(imageFolder_raw)]
+dir_list=[x[0] for x in os.walk(imageFolder_train)]
 dir_list = dir_list[1:]
 just_dirs = next(os.walk(imageFolder_raw))[1]
 print(just_dirs)
+thefile = open('/home/pavelkrolevets/Working/TF_facenet/data/labels.txt', 'w')
+for item in just_dirs:
+  thefile.write("%s\n" % item)
+
 for i in just_dirs:
     f = []
     imgExts = ["png", "bmp", "jpg"]
