@@ -23,7 +23,9 @@ build_image_data.py
 <br />==> script creates two TFRecords files ```/output/train-00000-of-00001 and /output/validation-00000-of-00001```
 
 # 3. Train the CNN model
-```Model.py```
+```
+Model.py
+```
 <br /> ==> You need to change addrs to your TFRecords files and size parameters of images you created in previous steps.
 <br /> ==> update size of the first fully connected layer 'fc_1'. Remember every max_pool layer makes tensor size twice less.
 <br /> Because net uses two pooling layers with kernel=2 stride=2 and padding of convolutional layers = SAME
@@ -31,7 +33,9 @@ build_image_data.py
 <br />If images have size of h = 100, w = 100 ==> fc_1 will have flat size 25x25x64, where 64 is number of filters
 in the previous convolutional layer (can be changed too).
 
-# 4. Run traing.
 Note: model checkpoints are saved in the checkpoins directory for the further restore and predict.
+
+
+
 
 Disclamer: big part of the code presented here is based on Google's proprietary scripts. Just combined and adapted for convinience. Use for you pleasure. Dont harm cats and dogs.
